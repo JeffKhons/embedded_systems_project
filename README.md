@@ -72,6 +72,12 @@ graph TD
     end
 ```
 
+## 📸 Hardware Platform
+
+<p align="center">
+  <img src="./Raspberry%20Pi.png" width="500"/>
+</p>
+
 ---
 
 ## 🚀 Key Technical Highlights
@@ -170,5 +176,5 @@ Test the motor hardware independently using the CLI writer:
 
 **Jeff Chen**
 
-* Graduate Student, Institute of Communications Engineering, NYCU
+* Master Student, Institute of Communications Engineering, NYCU
 * Embedded System Design, 2025
