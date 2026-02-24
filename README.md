@@ -139,17 +139,27 @@ sudo insmod FP_motor_driver_1.ko
 sudo chmod 666 /dev/dualstepper
 ```
 
-### 3. Run the System
+### 3. Run the System (Automated)
 
-**Step 1: Start the Main Controller** (Requires root for SCHED_FIFO)
+Instead of manually loading drivers and starting processes, use the provided script to launch the entire system:
+
 ```bash
-sudo ./main
+# 1. Grant execution permission
+chmod +x start_system.sh
+
+# 2. Run the initialization script (Requires root)
+sudo ./start_system.sh
 ```
 
-**Step 2: Start the Camera Process** (In a separate terminal)
-```bash
-./camera_app
-```
+This script automatically:
+
+### Loads the kernel driver (FP_motor_driver_1.ko)
+
+### Sets up permissions for /dev/dualstepper
+
+### Creates the Named Pipe for IPC
+
+### Launches both main_ctrl and camera_app in the background
 
 ---
 
