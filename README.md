@@ -104,7 +104,6 @@ Files are organized in the root directory:
 ```bash
 .
 ├── Makefile                   # Build automation
-├── 
 ├── Camara                     # Camera Process
     ├── CMakeLists.txt         # Build config for Camera App
     ├── carama.cpp             # OpenCV AprilTag Detection
