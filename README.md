@@ -143,7 +143,7 @@ sudo chmod 666 /dev/dualstepper
 
 **Step 1: Start the Main Controller** (Requires root for SCHED_FIFO)
 ```bash
-sudo ./main_ctrl
+sudo ./main
 ```
 
 **Step 2: Start the Camera Process** (In a separate terminal)
