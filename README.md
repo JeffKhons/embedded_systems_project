@@ -70,3 +70,15 @@ graph TD
         CharDev -.->|Pulse Generation| HRTimer
         HRTimer ==> GPIO
     end
+
+.
+├── Makefile                   # Build automation
+├── CMakeLists.txt             # Build config for Camera App
+├── main_controller/
+│   ├── main.c                 # Main Scheduler, TCP Server, Motor Logic
+│   └── web_backend_mock.c     # Testing tool for TCP commands
+├── camera/
+│   └── carama.cpp             # OpenCV AprilTag Detection
+├── kernel_driver/
+│   ├── FP_motor_driver_1.c    # Linux Kernel Module Source
+│   └── FP_motor_writer_1.c    # CLI tool for driver testing
