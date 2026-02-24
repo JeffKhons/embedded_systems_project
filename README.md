@@ -5,106 +5,170 @@
 ![Kernel](https://img.shields.io/badge/Kernel-Linux%20Driver-yellow.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
----
-
 ## 📖 Project Overview
 
-This project implements the embedded control system for a Wall-Climbing Delivery Robot running on a Raspberry Pi 3B.
+This project implements the **embedded control system** for a Wall-Climbing Delivery Robot. It runs on a **Raspberry Pi 3B** and features a hybrid architecture combining a **Linux Kernel Driver** for precision motor control and a **Multi-threaded User Application** for real-time task scheduling.
 
-It combines:
-
-- A Linux Kernel Driver for precision motor control  
-- A Multi-threaded User Application for real-time scheduling  
-- AprilTag-based indoor localization  
-- TCP-based command system  
-
-The system demonstrates RTOS concepts, kernel-level timing, and concurrent network-driven motor control.
+The system is designed to handle:
+* **Real-time Motor Control:** Using custom kernel drivers and CPU affinity.
+* **Network Communication:** TCP for reliable commands and UDP for video streaming.
+* **Computer Vision:** AprilTag detection for indoor localization.
+* **Concurrency:** Robust producer-consumer model for handling multiple user requests.
 
 ---
 
 ## 🏗️ System Architecture
 
-The system uses a Hybrid Architecture (Process + Thread):
+The software adopts a **Hybrid Architecture (Process + Thread)** to balance system stability and real-time performance.
 
-- The Camera runs as a separate process (fault isolation)
-- The Main Controller uses multiple threads
-- The Motor thread runs with SCHED_FIFO real-time policy
-- A custom kernel module generates precise GPIO pulses
-
----
-
-### Architecture Diagram
+* **Process Isolation:** The Camera module runs as a separate process to prevent vision algorithms (high load) from crashing the main controller.
+* **Thread Synchronization:** The Main Controller uses Mutexes and Condition Variables to coordinate Network and Motor threads efficiently.
 
 ```mermaid
 graph TD
-
-    subgraph RPi_System [Raspberry Pi 3B Controller]
-
-        subgraph Proc_Cam [Process: Camera App (C++)]
-            CamSensor --> AprilTag
-            AprilTag --> Pipe_In
+    subgraph RPi_System ["🍓 Raspberry Pi 3B Controller"]
+        direction TB
+        
+        %% Process A: Vision
+        subgraph Proc_Cam ["Process: Camera App (C++)"]
+            direction TB
+            CamSensor[Camera Capture] --> AprilTag[AprilTag Detection]
+            AprilTag -->|Write Tag ID| Pipe_In(Named Pipe: /tmp/apriltag_pipe)
         end
 
-        subgraph Proc_Main [Process: Main Controller (C)]
-
-            subgraph Thread_Net [TCP Server Thread]
-                Socket --> Queue
+        %% Process B: Main Controller
+        subgraph Proc_Main ["Process: Main Controller (C)"]
+            direction TB
+            
+            subgraph Thread_Net ["Thread: TCP Server"]
+                Socket[Socket Listen] -->|Push Request| Queue[Circular Queue]
             end
 
-            subgraph Thread_Main [Main Scheduler Thread]
-                Queue --> Logic
-                Logic --> MotorCond
-                Pipe_Out --> Logic
+            subgraph Thread_Main ["Thread: Main Scheduler"]
+                Queue -->|Pop Request| Logic[Task Logic]
+                Logic -->|Signal| MotorCond(Condition Variable)
+                Pipe_Out(Named Pipe) -->|Read Tag ID| Logic
             end
 
-            subgraph Thread_Motor [Motor Control Thread]
-                MotorCond --> IOCTL
+            subgraph Thread_Motor ["Thread: Motor Control (RT)"]
+                MotorCond -->|Wake Up| IOCTL[ioctl Call]
             end
-
         end
 
-        subgraph Kernel [Linux Kernel Space]
-            CharDev
-            GPIO
-            HRTimer
+        %% Kernel Space
+        subgraph Kernel ["Linux Kernel Space"]
+            CharDev[Character Device: /dev/dualstepper]
+            GPIO[GPIO Pins]
+            HRTimer[High-Resolution Timer]
         end
-
-        IOCTL --> CharDev
-        CharDev --> HRTimer
-        HRTimer --> GPIO
-
+        
+        %% Inter-Process Communication
+        Pipe_In -.-> Pipe_Out
+        
+        %% Kernel Interaction
+        IOCTL ==> CharDev
+        CharDev -.->|Pulse Generation| HRTimer
+        HRTimer ==> GPIO
     end
+```
 
-🚀 Technical Highlights
-Concurrency
+---
 
-Producer–Consumer circular queue
+## 🚀 Key Technical Highlights
 
-pthread_mutex for race protection
+### 1. Robust Concurrency & Thread Safety
+* **Producer-Consumer Model:** Implemented to bridge the asynchronous Network Thread and the synchronous Motor Thread.
+* **Mutex Locks (`pthread_mutex`):** Used to protect the shared **Circular Queue**, preventing race conditions when multiple users submit orders simultaneously.
+* **Condition Variables:** Utilized to put the Motor Thread to sleep when idle, significantly reducing CPU usage compared to polling.
 
-pthread_cond to eliminate polling
+### 2. Real-time Optimization (RTOS Concepts)
+* **SCHED_FIFO Policy:** The Motor Thread is configured with the `SCHED_FIFO` real-time scheduling policy to preempt non-critical background tasks.
+* **CPU Affinity:** Explicitly pinned critical threads to **CPU Core 2**, optimizing cache locality and minimizing context-switching overhead (Jitter reduction).
 
-Real-Time Optimization
+### 3. Custom Linux Kernel Driver
+* **Character Device Driver:** Developed `/dev/dualstepper` to bypass the slow userspace GPIO (sysfs).
+* **High-Resolution Timers (`hrtimer`):** Utilized inside the kernel to generate precise microsecond-level stepper pulses, ensuring smooth acceleration and deceleration profiles.
 
-SCHED_FIFO scheduling
+---
 
-CPU affinity binding
+## 📂 Project Structure
 
-Reduced context-switch jitter
+Files are organized in the root directory:
 
-Custom Linux Driver
-
-Character device /dev/dualstepper
-
-High-resolution timer (hrtimer)
-
-Microsecond-level step pulse control
-
+```bash
 .
-├── Makefile
-├── CMakeLists.txt
-├── main.c
-├── web_backend_mock.c
-├── camera.cpp
-├── FP_motor_driver_1.c
-└── FP_motor_writer_1.c
+├── Makefile                   # Build automation
+├── CMakeLists.txt             # Build config for Camera App
+├── main.c                     # Main Scheduler, TCP Server, Motor Logic
+├── web_backend_mock.c         # Testing tool for TCP commands
+├── carama.cpp                 # OpenCV AprilTag Detection
+├── FP_motor_driver_1.c        # Linux Kernel Module Source
+└── FP_motor_writer_1.c        # CLI tool for driver testing
+```
+
+---
+
+## 🛠️ Build & Installation
+
+### Prerequisites
+* Raspberry Pi 3B/4B (Raspberry Pi OS)
+* Linux Kernel Headers
+* OpenCV 4.x (C++ libs)
+* GCC / G++
+
+### 1. Compile All Components
+Use the provided `Makefile` to compile the Kernel Module, Main Controller, and Camera App:
+```bash
+make all
+```
+*Output files:* `main_ctrl`, `camera_app`, `web_mock`, `FP_motor_writer_1`, `FP_motor_driver_1.ko`
+
+### 2. Load Kernel Module
+Insert the custom driver into the Linux Kernel:
+```bash
+sudo insmod FP_motor_driver_1.ko
+sudo chmod 666 /dev/dualstepper
+```
+
+### 3. Run the System
+
+**Step 1: Start the Main Controller** (Requires root for SCHED_FIFO)
+```bash
+sudo ./main_ctrl
+```
+
+**Step 2: Start the Camera Process** (In a separate terminal)
+```bash
+./camera_app
+```
+
+---
+
+## Testing
+
+### Simulated Ground Station
+You can use the included mock server to send test commands to the robot without a frontend UI.
+
+```bash
+# Send a delivery command to Floor 3
+./web_mock 127.0.0.1
+```
+*Expected Output:* JSON command `{"CMD":"DELIVER", "FLOOR":3}` is sent, and the robot receives it via TCP.
+
+### Motor Driver CLI
+Test the motor hardware independently using the CLI writer:
+
+```bash
+./FP_motor_writer_1
+# Type the command below to start motor:
+# cmd> start FWD 200 800
+```
+
+---
+
+## Author
+
+**Jeff Chen**
+
+* Graduate Student, Institute of Communications Engineering, NYCU
+* Embedded System Design, 2025
