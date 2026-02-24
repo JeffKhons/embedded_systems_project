@@ -74,3 +74,37 @@ graph TD
         HRTimer --> GPIO
 
     end
+
+🚀 Technical Highlights
+Concurrency
+
+Producer–Consumer circular queue
+
+pthread_mutex for race protection
+
+pthread_cond to eliminate polling
+
+Real-Time Optimization
+
+SCHED_FIFO scheduling
+
+CPU affinity binding
+
+Reduced context-switch jitter
+
+Custom Linux Driver
+
+Character device /dev/dualstepper
+
+High-resolution timer (hrtimer)
+
+Microsecond-level step pulse control
+
+.
+├── Makefile
+├── CMakeLists.txt
+├── main.c
+├── web_backend_mock.c
+├── camera.cpp
+├── FP_motor_driver_1.c
+└── FP_motor_writer_1.c
