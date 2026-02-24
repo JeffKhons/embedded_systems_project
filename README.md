@@ -130,7 +130,7 @@ Use the provided `Makefile` to compile the Kernel Module, Main Controller, and C
 ```bash
 make all
 ```
-*Output files:* `main_ctrl`, `camera_app`, `web_mock`, `FP_motor_writer_1`, `FP_motor_driver_1.ko`
+*Output files:* `main`, `camera_app`, `web_mock`, `FP_motor_writer_1`, `FP_motor_driver_1.ko`
 
 ### 2. Load Kernel Module
 Insert the custom driver into the Linux Kernel:
