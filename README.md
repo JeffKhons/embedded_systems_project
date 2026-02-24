@@ -9,38 +9,31 @@
 
 ## 📖 Project Overview
 
-This project implements the **embedded control system** for a Wall-Climbing Delivery Robot running on a **Raspberry Pi 3B**.
+This project implements the embedded control system for a Wall-Climbing Delivery Robot running on a Raspberry Pi 3B.
 
-It features a hybrid architecture combining:
+It combines:
 
-- A **Linux Kernel Driver** for precision motor control  
-- A **Multi-threaded User Application** for real-time task scheduling  
+- A Linux Kernel Driver for precision motor control  
+- A Multi-threaded User Application for real-time scheduling  
+- AprilTag-based indoor localization  
+- TCP-based command system  
 
-### System Capabilities
-
-- Real-time Motor Control (Kernel + CPU affinity)
-- TCP command handling
-- UDP video streaming
-- AprilTag indoor localization
-- Producer-Consumer concurrency model
+The system demonstrates RTOS concepts, kernel-level timing, and concurrent network-driven motor control.
 
 ---
 
 ## 🏗️ System Architecture
 
-The software adopts a **Hybrid Architecture (Process + Thread)** design to balance stability and real-time performance.
+The system uses a Hybrid Architecture (Process + Thread):
 
-- **Process Isolation**  
-  The Camera module runs as a separate process to prevent crashes from affecting the main controller.
-
-- **Thread Synchronization**  
-  The Main Controller coordinates Network and Motor threads using mutexes and condition variables.
+- The Camera runs as a separate process (fault isolation)
+- The Main Controller uses multiple threads
+- The Motor thread runs with SCHED_FIFO real-time policy
+- A custom kernel module generates precise GPIO pulses
 
 ---
 
-### Architecture Diagram (Mermaid)
-
-> ⚠ GitHub must support Mermaid (it does by default now)
+### Architecture Diagram
 
 ```mermaid
 graph TD
@@ -81,3 +74,41 @@ graph TD
         HRTimer --> GPIO
 
     end
+
+---
+
+# 🚀 Technical Highlights
+
+## Concurrency
+
+- Producer–Consumer circular queue  
+- `pthread_mutex` for race protection  
+- `pthread_cond` to eliminate polling  
+
+---
+
+## Real-Time Optimization
+
+- `SCHED_FIFO` scheduling  
+- CPU affinity binding  
+- Reduced context-switch jitter  
+
+---
+
+## Custom Linux Driver
+
+- Character device `/dev/dualstepper`  
+- High-resolution timer (`hrtimer`)  
+- Microsecond-level step pulse control  
+
+---
+
+# 📂 Project Structure
+.
+├── Makefile
+├── CMakeLists.txt
+├── main.c
+├── web_backend_mock.c
+├── camera.cpp
+├── FP_motor_driver_1.c
+└── FP_motor_writer_1.c
