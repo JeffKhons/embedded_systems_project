@@ -75,7 +75,7 @@ graph TD
 ## 📸 Hardware Platform
 
 <p align="center">
-  <img src="./Raspberry%20Pi.png" width="500"/>
+  <img src="./Raspberry%20Pi.png" width="800"/>
 </p>
 
 ---
