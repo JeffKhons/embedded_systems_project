@@ -153,13 +153,13 @@ sudo ./start_system.sh
 
 This script automatically:
 
-### Loads the kernel driver (FP_motor_driver_1.ko)
+* Loads the kernel driver (FP_motor_driver_1.ko)
 
-### Sets up permissions for /dev/dualstepper
+* Sets up permissions for /dev/dualstepper
 
-### Creates the Named Pipe for IPC
+* Creates the Named Pipe for IPC
 
-### Launches both main_ctrl and camera_app in the background
+* Launches both main_ctrl and camera_app in the background
 
 ---
 
