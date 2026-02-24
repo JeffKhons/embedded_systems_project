@@ -1,0 +1,45 @@
+# 這裡改成實際下載好的 Raspberry Pi Linux kernel source 位置
+KDIR := /home/lab606/linux
+
+# ----------------------------------------------------------
+#  Cross-compile settings
+# ----------------------------------------------------------
+ARCH            ?= arm64                     # Target arch (RPi 3B = 64-bit)
+CROSS_COMPILE   ?= aarch64-linux-gnu-        # Prefix of your toolchain
+CROSS           := $(strip $(CROSS_COMPILE))
+
+# ----------------------------------------------------------
+#  Kernel-module build
+# ----------------------------------------------------------
+obj-m           := FP_motor_driver_1.o
+
+# ----------------------------------------------------------
+#  User-space CLI build
+# ----------------------------------------------------------
+USER_SRC       := FP_motor_writer_1.c
+USER_TARGET    := FP_motor_writer_1
+USER_CFLAGS    := -Wall -O2
+
+# ----------------------------------------------------------
+#  Targets
+# ----------------------------------------------------------
+.PHONY: all modules clean
+
+all: modules $(USER_TARGET)
+
+# --- Build user-space binary (cross-compiled)
+$(USER_TARGET): $(USER_SRC)
+	$(CROSS)gcc $(USER_CFLAGS) $< -o $@
+
+# --- Build kernel module (.ko)
+modules:
+	$(MAKE) -C $(KDIR) M=$(PWD) \
+	        ARCH=$(ARCH) CROSS_COMPILE=$(CROSS) \
+	        modules
+
+# --- House-keeping
+clean:
+	$(MAKE) -C $(KDIR) M=$(PWD) \
+	        ARCH=$(ARCH) CROSS_COMPILE=$(CROSS) \
+	        clean
+	$(RM) $(USER_TARGET)
