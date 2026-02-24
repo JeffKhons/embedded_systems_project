@@ -104,12 +104,16 @@ Files are organized in the root directory:
 ```bash
 .
 ├── Makefile                   # Build automation
-├── CMakeLists.txt             # Build config for Camera App
-├── main.c                     # Main Scheduler, TCP Server, Motor Logic
-├── web_backend_mock.c         # Testing tool for TCP commands
-├── carama.cpp                 # OpenCV AprilTag Detection
-├── FP_motor_driver_1.c        # Linux Kernel Module Source
-└── FP_motor_writer_1.c        # CLI tool for driver testing
+├── 
+├── Camara                     # Camera Process
+    ├── CMakeLists.txt         # Build config for Camera App
+    ├── carama.cpp             # OpenCV AprilTag Detection
+├── Main Controller            # Main Process
+    ├── main.c                 # Main Scheduler, TCP Server, Motor Logic
+    ├── web_backend_mock.c     # Testing tool for TCP commands
+├── Step Motor                 # Motor Thread
+    ├── FP_motor_driver_1.c    # Linux Kernel Module Source
+    └── FP_motor_writer_1.c    # CLI tool for driver testing
 ```
 
 ---
