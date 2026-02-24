@@ -90,7 +90,7 @@ Character Device Driver: Developed /dev/dualstepper to bypass the slow userspace
 High-Resolution Timers (hrtimer): Utilized inside the kernel to generate precise microsecond-level stepper pulses, ensuring smooth acceleration and deceleration profiles.
 
 📂 Project Structure
-Please ensure your files are organized as follows to match the Makefile:
+To maintain a clean workspace, files are organized as follows:
 
 Bash
 .
@@ -116,7 +116,7 @@ Use the provided Makefile to compile the Kernel Module, Main Controller, and Cam
 
 Bash
 make all
-Output files: main_ctrl, camera_app, web_mock, FP_motor_writer_1, FP_motor_driver_1.ko
+Output files will include: main_ctrl, camera_app, web_mock, FP_motor_writer_1, FP_motor_driver_1.ko
 
 2. Load Kernel Module
 Insert the custom driver into the Linux Kernel:
