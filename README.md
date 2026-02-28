@@ -91,7 +91,7 @@ graph TD
 * **SCHED_FIFO Policy:** The Motor Thread is configured with the `SCHED_FIFO` real-time scheduling policy to preempt non-critical background tasks.
 * **CPU Affinity:** Explicitly pinned critical threads to **CPU Core 2**, optimizing cache locality and minimizing context-switching overhead (Jitter reduction).
 
-### 3. Custom Linux Kernel Driver
+### 3. Custom Motor Linux Kernel Driver
 * **Character Device Driver:** Developed `/dev/dualstepper` to bypass the slow userspace GPIO (sysfs).
 * **High-Resolution Timers (`hrtimer`):** Utilized inside the kernel to generate precise microsecond-level stepper pulses, ensuring smooth acceleration and deceleration profiles.
 
@@ -159,7 +159,7 @@ This script automatically:
 
 * Creates the Named Pipe for IPC
 
-* Launches both main_ctrl and camera_app in the background
+* Launches both main and camera_app in the background
 
 ---
 
