@@ -1,0 +1,10 @@
+build/*
+driver/*.o
+driver/*.ko
+driver/*.mod
+driver/*.mod.c
+driver/Module.symvers
+driver/modules.order
+driver/.modules.order.cmd
+driver/.*.cmd
+app/vision/build/
