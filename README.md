@@ -114,15 +114,14 @@ the simulated motion duration, so the basic path can run without a camera.
 
 ```text
 app/
-  controller/       C controller, TCP, queue, motor service, and camera IPC
-  vision/           C++ OpenCV/AprilTag process
+ |-- controller/     C controller, TCP, queue, motor service, and camera IPC
+ |-- vision/         C++ OpenCV/AprilTag process
 driver/              Linux dual-stepper kernel module
 include/             Shared kernel/user-space ioctl UAPI
 tools/               TCP command client and direct motor CLI
 scripts/             System launcher
 docs/                Architecture notes and original course assets
-build/legacy/         Preserved kernel module built for the original environment
-Makefile              User-space and kernel build entry points
+Makefile             User-space and kernel build entry points
 ```
 
 ## Hardware-free demo
