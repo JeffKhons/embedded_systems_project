@@ -25,21 +25,71 @@ hardware-free demonstration path.
 ## Current architecture
 
 ```mermaid
-flowchart LR
-    UI["Command client / Web backend"] -->|"TCP, newline-delimited JSON"| TCP["TCP server thread"]
-    TCP --> Queue["Bounded request queue"]
-    Queue --> Controller["Controller state machine"]
+flowchart TB
+    subgraph External["External environment"]
+        direction LR
+        Client["Command client / Web backend"]
+        Camera["Camera sensor"]
+        Video["UDP video receiver"]
+    end
 
-    Camera["Camera + AprilTag process"] -->|"Tag ID over named FIFO"| Vision["Camera IPC thread"]
-    Vision --> Controller
-    Camera -->|"UDP JPEG frames"| Video["External video service"]
+    subgraph RPi["Raspberry Pi 3B"]
+        direction TB
 
-    Controller --> Motor["Motor service thread"]
-    Motor --> Backend{"Motor backend"}
-    Backend -->|"mock mode"| Mock["Software simulation"]
-    Backend -->|"hardware mode: ioctl"| Device["/dev/dualstepper"]
-    Device --> Driver["Kernel character driver"]
-    Driver -->|"hrtimer + GPIO"| Motors["Dual stepper motors"]
+        subgraph UserSpace["USER SPACE — application and services"]
+            direction TB
+            TCP["TCP server thread"]
+            Queue["Bounded request queue"]
+            Controller["Controller state machine"]
+            Motor["Motor service thread"]
+            Backend{"Motor backend"}
+            Mock["Software simulation"]
+
+            VisionApp["Vision process<br/>OpenCV + AprilTag"]
+            FIFO["Named FIFO<br/>inter-process communication"]
+            CameraIPC["Camera IPC thread"]
+
+            TCP -->|"push request"| Queue
+            Queue -->|"blocking pop"| Controller
+            Controller -->|"submit move"| Motor
+            Motor --> Backend
+            Backend -->|"mock mode"| Mock
+
+            VisionApp -->|"write tag ID"| FIFO
+            FIFO -->|"read tag ID"| CameraIPC
+            CameraIPC -->|"target matched: request stop"| Controller
+        end
+
+        subgraph SyscallBoundary["SYSTEM CALL BOUNDARY — user space enters the kernel"]
+            IOCTL["ioctl(fd, DUAL_STEPPER_START, &cmd)"]
+        end
+
+        subgraph KernelSpace["KERNEL SPACE — dual_stepper.ko"]
+            direction TB
+            Device["/dev/dualstepper<br/>misc character device"]
+            Handler["stepper_ioctl()<br/>copy_from_user() + validation"]
+            State["Driver control state<br/>protected by spinlock"]
+            Timer["hrtimer callback<br/>schedule STEP pulse edges"]
+            GPIO["gpio_set_value()<br/>STEP / DIR / ENABLE"]
+
+            Device --> Handler
+            Handler --> State
+            State -->|"hrtimer_start()"| Timer
+            Timer -->|"each timer expiry"| GPIO
+        end
+
+        Backend -->|"hardware mode: system call"| IOCTL
+        IOCTL --> Device
+    end
+
+    subgraph Hardware["PHYSICAL HARDWARE"]
+        Motors["Dual stepper motors"]
+    end
+
+    Client -->|"TCP command / status"| TCP
+    Camera -->|"raw frames"| VisionApp
+    VisionApp -->|"UDP JPEG frames"| Video
+    GPIO -->|"GPIO electrical signals"| Motors
 ```
 
 The named FIFO is a Linux IPC object used by two user-space processes. It is not
