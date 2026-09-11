@@ -2,7 +2,7 @@ CC ?= gcc
 CXX ?= g++
 PKG_CONFIG ?= pkg-config
 BUILD_DIR := build
-CPPFLAGS := -Iinclude -Iapp/controller
+CPPFLAGS := -D_GNU_SOURCE -Iinclude -Iapp/controller
 CFLAGS := -std=c11 -O2 -Wall -Wextra -Wpedantic
 CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Wpedantic
 
