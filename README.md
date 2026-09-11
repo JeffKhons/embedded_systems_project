@@ -60,7 +60,7 @@ flowchart TB
             CameraIPC -->|"target matched: request stop"| Controller
         end
 
-        subgraph SyscallBoundary["SYSTEM CALL BOUNDARY — user space enters the kernel"]
+        subgraph SyscallBoundary["SYSTEM CALL : user --> kernel"]
             IOCTL["ioctl(fd, DUAL_STEPPER_START, &cmd)"]
         end
 
