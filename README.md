@@ -26,20 +26,20 @@ hardware-free demonstration path.
 
 ```mermaid
 flowchart LR
-    UI[Command client / Web backend] -->|TCP, newline-delimited JSON| TCP[TCP server thread]
-    TCP --> Queue[Bounded request queue]
-    Queue --> Controller[Controller state machine]
+    UI["Command client / Web backend"] -->|"TCP, newline-delimited JSON"| TCP["TCP server thread"]
+    TCP --> Queue["Bounded request queue"]
+    Queue --> Controller["Controller state machine"]
 
-    Camera[Camera + AprilTag process] -->|Tag ID over named FIFO| Vision[Camera IPC thread]
+    Camera["Camera + AprilTag process"] -->|"Tag ID over named FIFO"| Vision["Camera IPC thread"]
     Vision --> Controller
-    Camera -->|UDP JPEG frames| Video[External video service]
+    Camera -->|"UDP JPEG frames"| Video["External video service"]
 
-    Controller --> Motor[Motor service thread]
-    Motor --> Backend{Motor backend}
-    Backend -->|mock mode| Mock[Software simulation]
-    Backend -->|hardware mode: ioctl| Device[/dev/dualstepper]
-    Device --> Driver[Kernel character driver]
-    Driver -->|hrtimer + GPIO| Motors[Dual stepper motors]
+    Controller --> Motor["Motor service thread"]
+    Motor --> Backend{"Motor backend"}
+    Backend -->|"mock mode"| Mock["Software simulation"]
+    Backend -->|"hardware mode: ioctl"| Device["/dev/dualstepper"]
+    Device --> Driver["Kernel character driver"]
+    Driver -->|"hrtimer + GPIO"| Motors["Dual stepper motors"]
 ```
 
 The named FIFO is a Linux IPC object used by two user-space processes. It is not
